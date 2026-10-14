@@ -6,6 +6,7 @@ All notable changes to `laravel-queue-metrics` will be documented in this file.
 
 ### Fixed
 
+- A queue whose name contains a colon (`reports:nightly`) is no longer cut short at the colon. Storage keys join their segments with `:` and were parsed by position, so `getAllQueuesWithMetrics()` reported `reports`, and job discovery split the queue name across the queue and job class. Key segments now escape `:` (and the escape character `~`), and the parsers unescape them. Keys for names with neither character are unchanged; metrics already stored for a name containing `:` or `~` are not read under the new key and age out on their normal TTL.
 - The test suite no longer fails at random. It ran within a few MB of PHP's 128 MB default — booting Testbench plus PHPUnit's own parser accounts for most of it — so with `executionOrder="random"` some orders exhausted the limit and killed the whole run, reported at whichever test allocated last rather than at the cause. The suite now sets an explicit `memory_limit` of 512 MB, and `ProcessMetricsIntegrationTest` moves RSS with a single 8 MB buffer instead of 100,000 small strings, which cost 18 MB of PHP heap for the same effect. No library code is affected.
 
 ## v3.4.0 - Delayed jobs that have come due - 2026-09-15
