@@ -6,6 +6,7 @@ All notable changes to `laravel-queue-metrics` will be documented in this file.
 
 ### Fixed
 
+- Jobs on Amazon SQS are now recorded under their queue name. Laravel's SQS driver gives workers the full queue URL as the job's queue, so processed, failed, duration, exception and timeout metrics were stored under the URL while queued counts were stored under the name, and nothing matched: throughput and processing time read as empty for every SQS queue. Listeners now reduce a queue URL to the queue name, removing the connection's configured `suffix` the way the SQS driver adds it (before `.fifo` on FIFO queues). Queue names that are not URLs are unchanged.
 - The test suite no longer fails at random. It ran within a few MB of PHP's 128 MB default — booting Testbench plus PHPUnit's own parser accounts for most of it — so with `executionOrder="random"` some orders exhausted the limit and killed the whole run, reported at whichever test allocated last rather than at the cause. The suite now sets an explicit `memory_limit` of 512 MB, and `ProcessMetricsIntegrationTest` moves RSS with a single 8 MB buffer instead of 100,000 small strings, which cost 18 MB of PHP heap for the same effect. No library code is affected.
 
 ## v3.4.0 - Delayed jobs that have come due - 2026-09-15
